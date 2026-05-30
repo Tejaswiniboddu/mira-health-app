@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MIRA — Medical Intelligence Robotic Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="19" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M20 8v24M8 20h24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="20" cy="20" r="5" fill="currentColor" opacity="0.2"/>
+            <circle cx="20" cy="20" r="2" fill="currentColor"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">MIRA</span>
+          <span class="brand-sub">Medical Intelligence Robotic Automation</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="btnNew">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        New Patient
+      </button>
+    </div>
+  </header>
+
+  <!-- ── MAIN ───────────────────────────────────────────────────────────── -->
+  <main class="main-content">
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <span class="stat-label">Total Patients</span>
+        <span class="stat-value" id="statTotal">—</span>
+      </div>
+      <div class="stat-card accent">
+        <span class="stat-label">Flagged Risk</span>
+        <span class="stat-value" id="statRisk">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Avg Glucose</span>
+        <span class="stat-value" id="statGlucose">— <small>mg/dL</small></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Avg Cholesterol</span>
+        <span class="stat-value" id="statChol">— <small>mg/dL</small></span>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 20 20" fill="none" class="search-icon">
+          <circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M13.5 13.5L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by name or email…" />
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrapper">
+      <table class="data-table" id="patientTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Patient</th>
+            <th>Date of Birth</th>
+            <th>Email</th>
+            <th class="num">Glucose</th>
+            <th class="num">Haemoglobin</th>
+            <th class="num">Cholesterol</th>
+            <th>AI Remarks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="empty-row">
+            <td colspan="9">
+              <div class="empty-state">
+                <svg viewBox="0 0 60 60" fill="none"><circle cx="30" cy="30" r="28" stroke="currentColor" stroke-width="1" opacity=".3"/><path d="M30 18v24M18 30h24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".4"/></svg>
+                <p>No patients yet. Add your first record.</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+
+  <!-- ── MODAL ──────────────────────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">New Patient</h2>
+        <button class="modal-close" id="modalClose" aria-label="Close">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+
+      <form id="patientForm" novalidate>
+        <input type="hidden" id="patientId" />
+
+        <div class="form-grid">
+          <!-- Full Name -->
+          <div class="form-group span-2">
+            <label for="fullName">Full Name <span class="req">*</span></label>
+            <input type="text" id="fullName" name="full_name" placeholder="e.g. Jane Doe" autocomplete="name" />
+            <span class="field-error" id="err-fullName"></span>
+          </div>
+
+          <!-- DOB -->
+          <div class="form-group">
+            <label for="dob">Date of Birth <span class="req">*</span></label>
+            <input type="date" id="dob" name="dob" />
+            <span class="field-error" id="err-dob"></span>
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">Email Address <span class="req">*</span></label>
+            <input type="email" id="email" name="email" placeholder="e.g. jane@example.com" />
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <!-- Blood values -->
+          <div class="form-group">
+            <label for="glucose">
+              Glucose <small class="unit">(mg/dL)</small> <span class="req">*</span>
+            </label>
+            <input type="number" id="glucose" name="glucose" min="0" step="0.1" placeholder="e.g. 95" />
+            <span class="hint">Normal: 70–100 mg/dL</span>
+            <span class="field-error" id="err-glucose"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="haemoglobin">
+              Haemoglobin <small class="unit">(g/dL)</small> <span class="req">*</span>
+            </label>
+            <input type="number" id="haemoglobin" name="haemoglobin" min="0" step="0.1" placeholder="e.g. 14.5" />
+            <span class="hint">Normal: M 13.5–17.5 / F 12–15.5</span>
+            <span class="field-error" id="err-haemoglobin"></span>
+          </div>
+
+          <div class="form-group span-2">
+            <label for="cholesterol">
+              Total Cholesterol <small class="unit">(mg/dL)</small> <span class="req">*</span>
+            </label>
+            <input type="number" id="cholesterol" name="cholesterol" min="0" step="0.1" placeholder="e.g. 180" />
+            <span class="hint">Desirable: &lt;200 mg/dL</span>
+            <span class="field-error" id="err-cholesterol"></span>
+          </div>
+        </div>
+
+        <!-- AI note -->
+        <div class="ai-notice">
+          <svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v5M10 6.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          AI Remarks will be generated automatically after saving.
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" id="btnCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSave">
+            <span class="btn-text">Save &amp; Predict</span>
+            <span class="btn-loader" hidden>
+              <svg class="spin" viewBox="0 0 20 20" fill="none">
+                <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="25 27"/>
+              </svg>
+              Analysing…
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── REMARKS MODAL ──────────────────────────────────────────────────── -->
+  <div class="modal-backdrop" id="remarksBackdrop">
+    <div class="modal modal-sm" id="remarksModal">
+      <div class="modal-header">
+        <h2 class="modal-title">AI Health Remarks</h2>
+        <button class="modal-close" id="remarksClose">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="remarks-content">
+        <div class="remarks-patient" id="remarksPatient"></div>
+        <div class="remarks-body" id="remarksBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
