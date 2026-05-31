@@ -37,25 +37,13 @@
   <!-- ── MAIN ───────────────────────────────────────────────────────────── -->
   <main class="main-content">
 
-    <!-- Stats bar -->
-    <div class="stats-bar">
-      <div class="stat-card">
-        <span class="stat-label">Total Patients</span>
-        <span class="stat-value" id="statTotal">—</span>
-      </div>
-      <div class="stat-card accent">
-        <span class="stat-label">Flagged Risk</span>
-        <span class="stat-value" id="statRisk">—</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Avg Glucose</span>
-        <span class="stat-value" id="statGlucose">— <small>mg/dL</small></span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">Avg Cholesterol</span>
-        <span class="stat-value" id="statChol">— <small>mg/dL</small></span>
-      </div>
-    </div>
+    <!-- Summary -->
+<div class="summary-bar">
+  <div class="summary-card">
+    <span class="stat-label">Total Patients</span>
+    <span class="stat-value" id="statTotal">—</span>
+  </div>
+</div>
 
     <!-- Search -->
     <div class="toolbar">
@@ -80,7 +68,7 @@
             <th class="num">Glucose</th>
             <th class="num">Haemoglobin</th>
             <th class="num">Cholesterol</th>
-            <th>AI Remarks</th>
+            <th>AI Health Prediction</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -182,22 +170,6 @@
           </button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ── REMARKS MODAL ──────────────────────────────────────────────────── -->
-  <div class="modal-backdrop" id="remarksBackdrop">
-    <div class="modal modal-sm" id="remarksModal">
-      <div class="modal-header">
-        <h2 class="modal-title">AI Health Remarks</h2>
-        <button class="modal-close" id="remarksClose">
-          <svg viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div class="remarks-content">
-        <div class="remarks-patient" id="remarksPatient"></div>
-        <div class="remarks-body" id="remarksBody"></div>
-      </div>
     </div>
   </div>
 
