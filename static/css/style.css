@@ -148,22 +148,21 @@ body {
   padding: 2rem;
 }
 
-/* ── Stats Bar ─────────────────────────────────────────────────────────── */
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+/* ── CHANGED: Summary bar — Total Patients only (removed avg stats) ─────── */
+.summary-bar {
+  display: flex;
   margin-bottom: 1.75rem;
 }
 
-.stat-card {
+.summary-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.1rem 1.4rem;
+  padding: 1.1rem 1.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
 }
-
-.stat-card.accent { border-color: var(--amber); }
 
 .stat-label {
   display: block;
@@ -283,27 +282,16 @@ body {
 .patient-name { font-weight: 500; }
 .patient-email { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
 
-/* Remarks cell */
-.remarks-cell {
-  max-width: 260px;
+/* CHANGED: Inline AI prediction — replaces remarks-cell and remarks-pill */
+.remarks-inline {
+  font-size: .8rem;
+  color: var(--text);
+  line-height: 1.55;
+  max-width: 320px;
+  border-left: 3px solid var(--accent);
+  padding-left: .75rem !important;
+  vertical-align: middle;
 }
-
-.remarks-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  background: var(--accent-dim);
-  color: var(--accent);
-  border-radius: 20px;
-  padding: .2rem .65rem;
-  font-size: .75rem;
-  cursor: pointer;
-  transition: background .15s;
-  white-space: nowrap;
-}
-.remarks-pill:hover { background: rgba(88,166,255,.25); }
-
-.remarks-pill svg { width: 12px; height: 12px; flex-shrink: 0; }
 
 /* Value badges */
 .val-normal { color: var(--green); }
@@ -352,8 +340,6 @@ body {
   box-shadow: var(--shadow);
   animation: slideUp .2s ease;
 }
-
-.modal.modal-sm { max-width: 480px; }
 
 @keyframes slideUp {
   from { transform: translateY(16px); opacity: 0; }
@@ -474,26 +460,6 @@ input.error { border-color: var(--red); }
 }
 @keyframes rotate { to { transform: rotate(360deg); } }
 
-/* ── Remarks modal ─────────────────────────────────────────────────────── */
-.remarks-content { padding: 1.5rem; }
-
-.remarks-patient {
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
-  color: var(--accent);
-  margin-bottom: .75rem;
-}
-
-.remarks-body {
-  font-size: .9rem;
-  color: var(--text);
-  line-height: 1.75;
-  padding: 1rem;
-  background: var(--bg-input);
-  border-radius: var(--radius-sm);
-  border-left: 3px solid var(--accent);
-}
-
 /* ── Toast ─────────────────────────────────────────────────────────────── */
 .toast-container {
   position: fixed;
@@ -531,13 +497,8 @@ input.error { border-color: var(--red); }
 }
 
 /* ── Responsive ────────────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .stats-bar { grid-template-columns: repeat(2, 1fr); }
-}
-
 @media (max-width: 640px) {
   .main-content { padding: 1rem; }
-  .stats-bar { grid-template-columns: 1fr 1fr; gap: .5rem; }
   .form-grid { grid-template-columns: 1fr; }
   .form-group.span-2 { grid-column: span 1; }
   .header-inner { padding: 0 1rem; }
