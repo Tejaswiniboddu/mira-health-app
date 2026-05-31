@@ -7,7 +7,6 @@ let patients = [];
 const tableBody        = document.getElementById("tableBody");
 const searchInput      = document.getElementById("searchInput");
 const modalBackdrop    = document.getElementById("modalBackdrop");
-const remarksBackdrop  = document.getElementById("remarksBackdrop");
 const patientForm      = document.getElementById("patientForm");
 const patientIdField   = document.getElementById("patientId");
 const modalTitle       = document.getElementById("modalTitle");
@@ -52,7 +51,6 @@ function clearFormErrors() {
 
 function showFormErrors(errors) {
   errors.forEach(msg => {
-    // Match field name heuristic
     if (/name/i.test(msg)) { showFieldErr("fullName", msg); return; }
     if (/dob|birth|date/i.test(msg)) { showFieldErr("dob", msg); return; }
     if (/email/i.test(msg)) { showFieldErr("email", msg); return; }
@@ -87,28 +85,9 @@ function cholesterolClass(v) {
   return "val-normal";
 }
 
-// ── Stats ────────────────────────────────────────────────────────────────────
+// ── CHANGED: Only show Total Patients count (removed avg glucose/cholesterol) ─
 function updateStats(data) {
   document.getElementById("statTotal").textContent = data.length;
-
-  const flagged = data.filter(p =>
-    parseFloat(p.glucose) > 126 ||
-    parseFloat(p.cholesterol) >= 240 ||
-    parseFloat(p.haemoglobin) < 8
-  ).length;
-  document.getElementById("statRisk").textContent = flagged;
-
-  const avgGlu = data.length
-    ? (data.reduce((a, p) => a + parseFloat(p.glucose), 0) / data.length).toFixed(1)
-    : "—";
-  const avgChol = data.length
-    ? (data.reduce((a, p) => a + parseFloat(p.cholesterol), 0) / data.length).toFixed(1)
-    : "—";
-
-  document.getElementById("statGlucose").innerHTML =
-    data.length ? `${avgGlu} <small>mg/dL</small>` : "—";
-  document.getElementById("statChol").innerHTML =
-    data.length ? `${avgChol} <small>mg/dL</small>` : "—";
 }
 
 // ── Render table ─────────────────────────────────────────────────────────────
@@ -139,14 +118,14 @@ function renderTable(data) {
       <td class="num"><span class="${glucoseClass(p.glucose)}">${(+p.glucose).toFixed(1)}</span></td>
       <td class="num"><span class="${haemoglobinClass(p.haemoglobin)}">${(+p.haemoglobin).toFixed(1)}</span></td>
       <td class="num"><span class="${cholesterolClass(p.cholesterol)}">${(+p.cholesterol).toFixed(1)}</span></td>
-      <td class="remarks-cell">
+
+      <!-- CHANGED: Show AI prediction text directly in table instead of "View Remarks" button -->
+      <td class="remarks-inline">
         ${p.remarks
-          ? `<span class="remarks-pill" onclick="openRemarks(${p.id})">
-               <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><path d="M8 5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-               View Remarks
-             </span>`
-          : `<span style="color:var(--text-dim);font-size:.78rem">—</span>`}
+          ? escHtml(p.remarks)
+          : '<span style="color:var(--text-dim);font-style:italic">Generating…</span>'}
       </td>
+
       <td class="actions-cell">
         <button class="btn btn-edit" onclick="openEdit(${p.id})" title="Edit">
           <svg viewBox="0 0 20 20" fill="none"><path d="M4 13.5V16h2.5l7.4-7.4-2.5-2.5L4 13.5zM15.7 5.3a1 1 0 000-1.4l-1.6-1.6a1 1 0 00-1.4 0l-1.2 1.2 3 3 1.2-1.2z" fill="currentColor"/></svg>
@@ -255,10 +234,10 @@ patientForm.addEventListener("submit", async (e) => {
   try {
     if (id) {
       await api(`/api/patients/${id}`, { method: "PUT", body: JSON.stringify(body) });
-      toast("Patient updated successfully.", "success");
+      toast("Patient updated with new AI prediction.", "success");
     } else {
       await api("/api/patients", { method: "POST", body: JSON.stringify(body) });
-      toast("Patient added with AI health remarks.", "success");
+      toast("Patient added with AI health prediction.", "success");
     }
     closeModal();
     await loadPatients();
@@ -285,22 +264,6 @@ window.deletePatient = async (id) => {
     toast("Failed to delete patient.", "error");
   }
 };
-
-// ── Remarks modal ─────────────────────────────────────────────────────────────
-window.openRemarks = (id) => {
-  const p = patients.find(x => x.id === id);
-  if (!p) return;
-  document.getElementById("remarksPatient").textContent = p.full_name;
-  document.getElementById("remarksBody").textContent = p.remarks || "No remarks available.";
-  remarksBackdrop.classList.add("open");
-};
-
-document.getElementById("remarksClose").addEventListener("click", () =>
-  remarksBackdrop.classList.remove("open")
-);
-remarksBackdrop.addEventListener("click", e => {
-  if (e.target === remarksBackdrop) remarksBackdrop.classList.remove("open");
-});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 loadPatients();
