@@ -1,11 +1,10 @@
 """
 MIRA - Medical Intelligence Robotic Automation
-Flask Backend with SQLite + Claude AI Health Prediction
+Flask Backend with SQLite + Groq AI Health Prediction
 """
 
 import os
 import re
-import json
 import sqlite3
 from datetime import datetime, date
 
@@ -100,32 +99,25 @@ def validate_patient(data, is_update=False):
 
 # ── AI Prediction ────────────────────────────────────────────────────────────
 
-def get_ai_prediction(full_name, dob, glucose, haemoglobin, cholesterol):
-    
-    client = Groq(
-        api_key=os.getenv("GROQ_API_KEY")
-    )
-
-    try:
-        birth = datetime.strptime(dob, "%Y-%m-%d").date()
-        age = (date.today() - birth).days // 365
-    except:
-        age = "Unknown"
+def get_ai_prediction(glucose, haemoglobin, cholesterol):
+    """
+    Only blood test values are sent to the AI.
+    No personal information (name, age, dob) is passed.
+    """
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
     prompt = f"""
 You are a medical AI assistant.
 
-Patient: {full_name}
-Age: {age}
-
-Blood Test Results:
-- Glucose: {glucose} mg/dL
-- Haemoglobin: {haemoglobin} g/dL
-- Cholesterol: {cholesterol} mg/dL
-
-Give a short health risk assessment in 2-3 sentences.
+Based on the following blood test results only, provide a short
+health risk assessment in 2-3 sentences.
 Mention possible risks if values are abnormal.
 End with: Consult a healthcare professional for proper diagnosis.
+
+Blood Test Results:
+- Glucose: {glucose} mg/dL (Normal: 70-100 mg/dL)
+- Haemoglobin: {haemoglobin} g/dL (Normal: 12-17.5 g/dL)
+- Cholesterol: {cholesterol} mg/dL (Desirable: below 200 mg/dL)
 """
 
     response = client.chat.completions.create(
@@ -139,6 +131,7 @@ End with: Consult a healthcare professional for proper diagnosis.
     )
 
     return response.choices[0].message.content
+
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
@@ -174,8 +167,8 @@ def create_patient():
 
     try:
         remarks = get_ai_prediction(
-            data["full_name"], data["dob"],
-            float(data["glucose"]), float(data["haemoglobin"]),
+            float(data["glucose"]),
+            float(data["haemoglobin"]),
             float(data["cholesterol"]),
         )
     except Exception as e:
@@ -208,11 +201,10 @@ def update_patient(pid):
     if errors:
         return jsonify({"errors": errors}), 400
 
-    # Re-generate AI remarks
     try:
         remarks = get_ai_prediction(
-            data["full_name"], data["dob"],
-            float(data["glucose"]), float(data["haemoglobin"]),
+            float(data["glucose"]),
+            float(data["haemoglobin"]),
             float(data["cholesterol"]),
         )
     except Exception as e:
